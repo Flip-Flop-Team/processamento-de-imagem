@@ -4,6 +4,8 @@ from PyQt5.QtCore import QCoreApplication, Qt, QT_TR_NOOP as tr
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QFileDialog, QAction
+from widgets.blackWindow import BlackWindow
+from widgets.imageWidget import ImageWidget
 
 
 class MainWindow(QMainWindow):
@@ -14,8 +16,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Detector de cancêr de mama')
         self.setIcon()
         self.topMenu()
-        self.label = QLabel()
-        self.setCentralWidget(self.label)
         self.show()
 
     def handleWindowDimensions(self):
@@ -40,6 +40,9 @@ class MainWindow(QMainWindow):
         fileMenu = topMenu.addMenu('&File')
         fileMenu.addAction(self.createTopMenuAction(
             '&Open Image', 'Ctrl+O', 'Open a image', self.openImage))
+        changeColor = topMenu.addMenu('&Background Color')
+        changeColor.addAction(self.createTopMenuAction(
+            '&Black', 'Ctrl+B', 'Black', self.changeBackgrondToBlack))
 
     def createTopMenuAction(self, text, shortcut, statusTip, func):
         action = QAction(text, self)
@@ -51,10 +54,14 @@ class MainWindow(QMainWindow):
     def openImage(self):
         imagePath, _ = QFileDialog.getOpenFileName(
             self, 'Open Image', '', '*.png *.TIFF *.DICOM')
-        pixmap = QPixmap(imagePath)
-        self.label.setPixmap(pixmap)
-        self.resize(pixmap.size())
-        self.adjustSize()
+        imageBackground = ImageWidget(imagePath, self)
+        self.currentWidget = imageBackground
+        self.setCentralWidget(self.currentWidget)
+
+    def changeBackgrondToBlack(self):
+        blackWindow = BlackWindow()
+        self.currentWidget = blackWindow
+        self.setCentralWidget(self.currentWidget)
 
 
 if __name__ == "__main__":  # had to add this otherwise app crashed
