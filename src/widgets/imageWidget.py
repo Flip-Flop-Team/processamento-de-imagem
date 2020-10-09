@@ -15,7 +15,7 @@ class ImageWidget(QtWidgets.QWidget):
 
     def wheelEvent(self, event):
         side = int(event.angleDelta().y()/120)
-        if (self.scale < 3 and side > 0) or (self.scale > 0.5 and side < 0):
+        if (self.scale < 5 and side > 0) or (self.scale > 0.5 and side < 0):
             self.scale += side/10
         self.pixmap = self.originalPixmap.scaled(
             self.originalPixmap.width()*self.scale, self.originalPixmap.height()*self.scale)

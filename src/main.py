@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QFileDialog, QAction
 from widgets.imageWidget import ImageWidget
+import signal
 
 
 class MainWindow(QMainWindow):
@@ -57,6 +58,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":  # had to add this otherwise app crashed
     def run():
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
         app = QApplication(sys.argv)
         Gui = MainWindow()
         sys.exit(app.exec_())
