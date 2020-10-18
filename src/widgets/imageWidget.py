@@ -1,7 +1,8 @@
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QBrush, QColor
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QBrush, QColor, QPen
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QScrollArea
 from PyQt5 import QtCore
+from PyQt5 import Qt
 import copy
 
 
@@ -61,7 +62,8 @@ class ImageWidget(QtWidgets.QWidget):
 
             self.label.setPixmap(self.zoomedPixmap)
             qp = QPainter(self.label.pixmap())
-            br = QBrush(QColor(0, 255, 0, 40))
+            qp.setPen(QPen(QColor(0, 255, 0), 3, QtCore.Qt.SolidLine))
+            br = QBrush(QColor(0, 0, 0, 0))
             qp.setBrush(br)
             firstPoint = copy.deepcopy(self.mousePosition)
             secondPoint = copy.deepcopy(self.mousePosition)
