@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy
 from PyQt5.QtCore import QCoreApplication, Qt, QT_TR_NOOP as tr
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtWidgets
@@ -8,6 +9,8 @@ from widgets.imageWidget import ImageWidget
 import signal
 import pydicom as dicom
 import cv2
+from skimage.feature import greycomatrix, greycoprops
+from skimage.measure import shannon_entropy, moments_hu
 
 class MainWindow(QMainWindow):
 
@@ -55,23 +58,22 @@ class MainWindow(QMainWindow):
 
         trainingMenu.addAction(self.createTopMenuAction('Train', 'Ctrl+T', 'Train using images', self.train))
         trainingMenu.addAction(self.createTopMenuAction('Calculate characteristics', '', 'Calculate characteristics from images', self.calculate))
-        trainingMenu.addAction(self.createTopMenuAction('Homogeneidade', '', 'Use homogeneidade', self.useHomogeneidade, True))
+        trainingMenu.addAction(self.createTopMenuAction('Homogeneidade', '', 'Use homogeneity', self.useHomogeneity, True))
         trainingMenu.addAction(self.createTopMenuAction('Entropy', '', 'Use entropy', self.useEntropy, True))
-        trainingMenu.addAction(self.createTopMenuAction('Variance', '', 'Use variance', self.useVariance, True))
+        trainingMenu.addAction(self.createTopMenuAction('Energy', '', 'Use energy', self.useEnergy, True))
+        trainingMenu.addAction(self.createTopMenuAction('Constrast', '', 'Use contrast', self.useContrast, True))
 
     def train(self):
         self.showSuccessMessage('Training...')
 
-    def calculate(self):
-        self.showSuccessMessage('Calculating...')
-
-    def useHomogeneidade(self, checked):
-        self.characteristics['homogeneidade'] = checked
+    def useHomogeneity(self, checked):
+        self.characteristics['homogeneity'] = checked
     def useEntropy(self, checked):
         self.characteristics['entropy'] = checked
-    def useVariance(self, checked):
-        self.characteristics['variance'] = checked
-
+    def useEnergy(self, checked):
+        self.characteristics['energy'] = checked
+    def useContrast(self, checked):
+        self.characteristics['contrast'] = checked
     def unselect(self):
         self.currentWidget.drawReact = False
         self.currentWidget.label.setPixmap(self.currentWidget.zoomedPixmap)
@@ -130,7 +132,6 @@ class MainWindow(QMainWindow):
         if imagePath == "":
             return
         if '.DCM' in imagePath.lower():
-            print('Opening a DICOM')
             ds = dicom.dcmread(imagePath)
             pixel_array_numpy = ds.pixel_array
             imagePath = imagePath.replace('.DCM', '.PNG')
@@ -141,9 +142,51 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.currentWidget)
 
     def openFolder(self):
-        folderPath = QFileDialog.getExistingDirectory(None, 'Select a folder', '', QFileDialog.ShowDirsOnly)
-        print(folderPath)
+        try:
+            folderPath = QFileDialog.getExistingDirectory(None, 'Select a folder', '', QFileDialog.ShowDirsOnly)
+            self.images_dictionary = {1: [], 2: [], 3: [], 4: []}  
+            for item in range(1,5):
+                images = os.listdir(folderPath + '/{}'.format(item))
+                image_key = 0
+                for image in images:
+                    grey_image = cv2.imread('{}/{}/{}'.format(folderPath, item, image), 0)
+                    self.images_dictionary[item].append({
+                        'id': image_key,
+                        'image': grey_image
+                    })
+            self.showSuccessMessage('Diretório lido com sucesso')
+        except:
+           self.showErrorMessage('Erro ao ler o diretorio, tente novamente')
 
+    def calculate(self):
+        if self.characteristics == {}:
+            self.showErrorMessage('Nenhuma caracteristica foi selecionada')
+            return
+        
+        if not hasattr(self, 'images_dictionary'):
+            self.showErrorMessage('Diretório de imagens não selecionado')
+            return
+        try:
+            self.images_characteristics = {1: [], 2: [], 3: [], 4: []}  
+            for item in range(1, 5):
+                for element in self.images_dictionary[item]:
+                    image = numpy.array((element['image']/8), 'int')
+                    comatrix = greycomatrix(image,[1,2,4,8,16], [0, numpy.pi/4, numpy.pi/2,  3*numpy.pi/4], levels=32, normed=True, symmetric=True)
+                    characteristics = {'id': element['id']}
+                    if hasattr(self.characteristics, 'homogeneity'):
+                        characteristics['homogeneity'] = greycoprops(comatrix, 'homogeneity')
+                    if hasattr(self.characteristics, 'entropy'):
+                        characteristics['entropy'] = shannon_entropy(image)
+                    if hasattr(self.characteristics, 'energy'):
+                        characteristics['energy'] = greycoprops(comatrix, 'energy')
+                    if hasattr(self.characteristics, 'contrast'):
+                        characteristics['contrast'] = greycoprops(comatrix, 'contrast')
+                    characteristics['hu_moments'] = moments_hu(image)
+                    self.images_characteristics[item].append(characteristics)
+            self.showSuccessMessage('Calculo realizado com sucesso')
+        except:
+            self.showErrorMessage('Erro ao calcular, tente novamente')
+               
 
 if __name__ == "__main__":  # had to add this otherwise app crashed
     def run():

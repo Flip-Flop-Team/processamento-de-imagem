@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QScrollArea
 from PyQt5 import QtCore
 from PyQt5 import Qt
+import cv2
 import copy
 
 
