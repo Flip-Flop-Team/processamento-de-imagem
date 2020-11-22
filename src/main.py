@@ -9,6 +9,8 @@ from widgets.imageWidget import ImageWidget
 import signal
 import pydicom as dicom
 import cv2
+import sklearn
+from random import shuffle
 from skimage.feature import greycomatrix, greycoprops
 from skimage.measure import shannon_entropy, moments_hu
 
@@ -62,9 +64,6 @@ class MainWindow(QMainWindow):
         trainingMenu.addAction(self.createTopMenuAction('Entropy', '', 'Use entropy', self.useEntropy, True))
         trainingMenu.addAction(self.createTopMenuAction('Energy', '', 'Use energy', self.useEnergy, True))
         trainingMenu.addAction(self.createTopMenuAction('Constrast', '', 'Use contrast', self.useContrast, True))
-
-    def train(self):
-        self.showSuccessMessage('Training...')
 
     def useHomogeneity(self, checked):
         self.characteristics['homogeneity'] = checked
@@ -186,8 +185,22 @@ class MainWindow(QMainWindow):
             self.showSuccessMessage('Calculo realizado com sucesso')
         except:
             self.showErrorMessage('Erro ao calcular, tente novamente')
-               
+    
+    def train(self):
+        if not hasattr(self, 'images_characteristics'):
+            self.showErrorMessage('Você precisa calcular as caracteristicas antes de realizar o treinamento')
+            return
+        random_list = list(range(0, 100))
+        shuffle(random_list)
+        imagens_treinamento = {1: [], 2: [], 3: [], 4: []}
 
+        for item in range(1,5):
+            for characteristics in self.images_characteristics[item]:
+                for index in range(0, 75):
+                    imagens_treinamento[item].append(self.images_characteristics[item][random_list[index]])
+
+        
+     
 if __name__ == "__main__":  # had to add this otherwise app crashed
     def run():
         signal.signal(signal.SIGINT, signal.SIG_DFL)
