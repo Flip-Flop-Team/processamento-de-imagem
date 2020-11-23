@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         message += 'Energia: {} \n'.format(str(round(self.characteristicsUniqueImage['energy'][0], 3)))
         message += 'Entropia: {} \n'.format(str(round(self.characteristicsUniqueImage['entropy'], 3)))
         message += 'Hu: {} \n'.format(str(round(self.characteristicsUniqueImage['hu_moments'][0], 3)))
-        message += 'Classificacao: {} \n'.format(self.imageClassification)
+        message += 'Classificacao: {} \n'.format(self.imageClassification+1)
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText("Info")
