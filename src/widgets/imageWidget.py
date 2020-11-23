@@ -72,4 +72,8 @@ class ImageWidget(QtWidgets.QWidget):
             firstPoint.setY(y-64)
             secondPoint.setX(x+64)
             secondPoint.setY(y+64)
+            self.p1x = firstPoint.x()
+            self.p1y = firstPoint.y()
+            self.p2x = secondPoint.x()
+            self.p2y = secondPoint.y()
             qp.drawRect(QtCore.QRect(firstPoint, secondPoint))
