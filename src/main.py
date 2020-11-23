@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         actionMenu.addAction(self.createTopMenuAction('U&nzoom', 'Ctrl+-', 'Unzoom a image', self.unzoomImage))
         actionMenu.addAction(self.createTopMenuAction('Unselect all actions', 'Esc', 'Unselect all actions', self.unselect))
         actionMenu.addAction(self.createTopMenuAction('Show info', '', 'Show informations', self.showImagesInfo))
-        actionMenu.addAction(self.createTopMenuAction('Show info selected image', '', 'Show informations selected image', self.showImagesInfoUniqueImage))
+        actionMenu.addAction(self.createTopMenuAction('Show info selected area', '', 'Show informations selected area', self.showImagesInfoUniqueImage))
 
         trainingMenu.addAction(self.createTopMenuAction('Calculate characteristics', '', 'Calculate characteristics from images', self.calculate))
         trainingMenu.addAction(self.createTopMenuAction('Train', 'Ctrl+T', 'Train using images', self.train))
@@ -91,6 +91,9 @@ class MainWindow(QMainWindow):
             self.showErrorMessage('You need to open a image first')
 
     def showImagesInfo(self):
+        if not hasattr(self, 'tabela'):
+            self.showErrorMessage('É necessário classificar as imagens de treino')
+            return
         acuracia = sum(self.tabela[i][i]for i in range(4))/100
         especificidade = 1 - sum(25 - self.tabela[i][i]for i in range(4))/300
         message = "Matriz de confusão\n"
@@ -99,8 +102,8 @@ class MainWindow(QMainWindow):
                 message += str(j)
                 message += '  '
             message += '\n'
-        message += 'Acuracia: {} \n'.format(acuracia)
-        message += 'Especifidade: {} \n'.format(especificidade)
+        message += 'Acuracia: {} \n'.format(round(acuracia,3))
+        message += 'Especifidade: {} \n'.format(round(especificidade, 3))
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText("Info")
@@ -110,7 +113,7 @@ class MainWindow(QMainWindow):
 
     def showImagesInfoUniqueImage(self):
         if not hasattr(self, 'characteristicsUniqueImage'):
-            showErrorMessage('É necessário classificar a imagem unica')
+            self.showErrorMessage('É necessário classificar a imagem unica')
             return
         message = ""
         message += 'Homogeinedade: {} \n'.format(str(round(self.characteristicsUniqueImage['homogeneity'][0], 3)))
@@ -118,6 +121,7 @@ class MainWindow(QMainWindow):
         message += 'Energia: {} \n'.format(str(round(self.characteristicsUniqueImage['energy'][0], 3)))
         message += 'Entropia: {} \n'.format(str(round(self.characteristicsUniqueImage['entropy'], 3)))
         message += 'Hu: {} \n'.format(str(round(self.characteristicsUniqueImage['hu_moments'][0], 3)))
+        message += 'Classificacao: {} \n'.format(self.imageClassification)
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText("Info")
