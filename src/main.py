@@ -213,6 +213,7 @@ class MainWindow(QMainWindow):
            self.showErrorMessage('Erro ao ler o diretorio, tente novamente')
 
     def calculate(self):
+        tic = time.perf_counter()
         """
         Calculate images caracteristics and put them in self.images_caracteristics with the structure:
         {
@@ -253,7 +254,8 @@ class MainWindow(QMainWindow):
                         characteristics['contrast'] =[sum(i) for i in greycoprops(comatrix, 'contrast')]
                     characteristics['hu_moments'] = list(moments_hu(image))
                     self.images_characteristics[item].append(characteristics)
-            self.showSuccessMessage('Calculo realizado com sucesso')
+            toc = time.perf_counter()
+            self.showSuccessMessage(f'Calculo realizado com sucesso {toc-tic:0.4f} seconds')
         except Exception as err:
             print(err)
             self.showErrorMessage('Erro ao calcular, tente novamente')
